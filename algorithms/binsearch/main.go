@@ -2,22 +2,6 @@ package main
 
 import "fmt"
 
-// create binary search function using recursion
-func binary_search_recursion(arr []int, target int, low int, high int) int {
-	if low > high {
-		return -1
-	}
-	mid := (low + high) / 2
-	if arr[mid] == target {
-		return mid
-	} else if arr[mid] > target {
-		return binary_search_recursion(arr, target, low, mid-1)
-	} else if arr[mid] < target {
-		return binary_search_recursion(arr, target, mid+1, high)
-	}
-	return -1
-}
-
 func binary_search(arr []int, target int) int {
 	low := 0
 	high := len(arr) - 1
