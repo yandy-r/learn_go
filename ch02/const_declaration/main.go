@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 const x int64 = 10
 
@@ -10,6 +13,21 @@ const (
 )
 
 const z = 20 * 10
+
+// Create a function to get command line arguments and print them
+func printArgs() {
+
+	if len(os.Args) < 2 {
+		e := fmt.Errorf("At least one argument is required")
+
+		fmt.Println(e)
+	}
+
+	fmt.Println("Arguments:", len(os.Args))
+	for i, v := range os.Args {
+		fmt.Println(i, v)
+	}
+}
 
 func main() {
 	const y = "hello"
@@ -22,4 +40,7 @@ func main() {
 
 	fmt.Println(x)
 	fmt.Println(y)
+
+	fmt.Println()
+	printArgs()
 }
