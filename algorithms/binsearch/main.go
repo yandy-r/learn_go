@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"strconv"
 )
 
@@ -35,7 +34,7 @@ func getTarget() (int, error) {
 	// convert s to int and return it
 	t, e := strconv.Atoi(s)
 	if e != nil {
-		err := fmt.Errorf("Error: %v, entered value: %v", t, reflect.TypeOf(t))
+		err := fmt.Errorf("Cannot convert \"%s\" to int", s)
 		return -1, err
 	}
 
