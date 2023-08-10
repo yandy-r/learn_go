@@ -53,13 +53,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println("-------------------------------------")
 	if i != -1 {
 		fmt.Printf("The target: %d is at index: %d\n", t, i)
 	} else {
 		fmt.Printf("The target: %d is not in the array\n", t)
 	}
-
-	fmt.Println("-------------------------------------")
 	fmt.Println("-------------------------------------")
 	fmt.Println()
 }
