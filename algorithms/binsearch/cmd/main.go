@@ -36,7 +36,6 @@ func orderedList() []int {
 		s[i] = rand.Intn(100)
 	}
 	sort.Ints(s)
-	fmt.Println(s)
 
 	return s
 }
