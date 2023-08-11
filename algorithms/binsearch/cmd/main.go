@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"sort"
 	"strconv"
 
 	"github.com/kidinstinct/learn_go/algorithms/binsearch/node"
@@ -27,8 +29,20 @@ func getTarget() (int, error) {
 	return t, nil
 }
 
+// Create a random list of ordered integers
+func orderedList() []int {
+	s := make([]int, 100)
+	for i := range s {
+		s[i] = rand.Intn(100)
+	}
+	sort.Ints(s)
+	fmt.Println(s)
+
+	return s
+}
+
 func main() {
-	arr := []int{1, 2, 3, 4, 5, 6}
+	arr := orderedList()
 	t, err := getTarget()
 
 	n := node.NewNode(len(arr)-1, 0)
