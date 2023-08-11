@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/kidinstinct/learn_go/algorithms/binsearch/node"
 	"os"
 	"strconv"
+
+	"github.com/kidinstinct/learn_go/algorithms/binsearch/node"
 )
 
 func getTarget() (int, error) {
