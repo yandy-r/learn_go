@@ -40,13 +40,13 @@ func (n *node) GetMid() int {
 	return n.mid
 }
 
-func (n *node) BinSearch(arr []int, target int) int {
+func (n *node) BinSearch(arr []int, t int) int {
 	for n.low <= n.high {
-		if arr[n.mid] == target {
+		if arr[n.mid] == t {
 			return n.mid
-		} else if arr[n.mid] > target {
+		} else if arr[n.mid] > t {
 			n.high = n.mid - 1
-		} else if arr[n.mid] < target {
+		} else if arr[n.mid] < t {
 			n.low = n.mid + 1
 		}
 		n.mid = (n.low + n.high) / 2
