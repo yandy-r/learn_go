@@ -1,5 +1,4 @@
 // Implement the quicksort algorithm and benchmark it against the standard library sort function.
-// Use golang as the language for this exercise.
 
 package main
 
