@@ -212,3 +212,29 @@ num := copy(y, x) // -> y: = [1, 2, 3] and num: = 3
 - Some libraries and the `for-range` loop assume the `string` is composed of `UTF-8` encoded points.
 - > According to the language specification, `Go` source code is always written in UTF-8. Unless you use hexadecimal
   > escapes in a string literal, your string literals are written in UTF-8.
+- Most data in `Go` is read and written as a sequence of `bytes`
+
+### Maps
+
+- A `map` is a collection of key-value pairs.
+- Teh map type is written as `map[keyType]valueType`
+
+```go
+var nilMap map[string]int // -> nil
+emptyMap := map[string]int{} // -> empty not the same as nil, this has a length of 0
+
+// create a map with initial values
+// The keys are string and the values are slices of strings
+teams := map[string][]string {
+    "Orcas": []string{"Fred", "Ralph", "Bijou"},
+    "Lions": []string{"Sarah", "Peter", "Billie"},
+    "Kittens": []string{"Waldo", "Raul", "Ze"},
+}
+
+// If you know how many key-value pairs you intend to put in the map, but don’t know the exact values,
+// you can use make to create a map with a default size:
+ages := make(map[int][]string, 10)
+```
+
+- The key for a map can be any comparable type. This means you cannot use a slice or a map as the key for a map.
+- > Use a map when the order of elements doesn’t matter. Use a slice when the order of elements is important.
