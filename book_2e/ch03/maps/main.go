@@ -1,10 +1,17 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
 	"strings"
 )
+
+var f string
+
+func init() {
+	flag.StringVar(&f, "function", "", "The function to run.")
+	flag.StringVar(&f, "f", "", "The function to run (shorthand).")
+}
 
 /*
 	 The comma, ok idiom is used to test for the existence of a key in a map.
@@ -36,12 +43,9 @@ func commaOk() {
 }
 
 func main() {
-	args := os.Args[1:]
-
-	for _, v := range args {
-		switch strings.ToLower(v) {
-		case "commaok", "comma_ok":
-			commaOk()
-		}
+	flag.Parse()
+	switch strings.ToLower(f) {
+	case "commaok", "comma_ok":
+		commaOk()
 	}
 }
