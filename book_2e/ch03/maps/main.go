@@ -6,11 +6,15 @@ import (
 	"strings"
 )
 
-var f string
+var (
+	f string
+	v bool
+)
 
 func init() {
 	flag.StringVar(&f, "function", "", "The function to run.")
 	flag.StringVar(&f, "f", "", "The function to run (shorthand).")
+	flag.BoolVar(&v, "v", false, "Verbose")
 }
 
 /*
