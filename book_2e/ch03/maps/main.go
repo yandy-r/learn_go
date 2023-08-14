@@ -38,8 +38,10 @@ func commaOk() {
 func main() {
 	args := os.Args[1:]
 
-	switch arg := args[0]; strings.ToLower(arg) {
-	case "commaok", "comma_ok":
-		commaOk()
+	for _, v := range args {
+		switch strings.ToLower(v) {
+		case "commaok", "comma_ok":
+			commaOk()
+		}
 	}
 }
