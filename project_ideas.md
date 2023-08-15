@@ -1,6 +1,6 @@
 # Golang Project Ideas
 
-1. Task Manager: Build a simple command-line task manager that allows users to add, list, and delete tasks.
+1. Todo Manager: Build a simple command-line todo manager that allows users to add, list, and delete todos.
 2. URL Shortener: Create a web application that shortens long URLs and redirects users to the original URL when the
    shortened URL is accessed.
 3. Weather App: Develop a weather application that fetches weather data from an API and displays it to the user based on
