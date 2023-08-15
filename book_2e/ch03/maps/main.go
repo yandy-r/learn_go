@@ -1,20 +1,22 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 )
 
-var (
-	f string
-	v bool
-)
+func initFlags(args []string) (*flag.FlagSet, error) {
+	fs := flag.NewFlagSet("run", flag.ContinueOnError)
 
-func init() {
-	flag.StringVar(&f, "function", "", "The function to run.")
-	flag.StringVar(&f, "f", "", "The function to run (shorthand).")
-	flag.BoolVar(&v, "v", false, "Verbose")
+	fs.String("function", "", "The function to run.")
+	fs.String("f", "", "The function to run (shorthand).")
+	fs.Bool("v", false, "Verbose")
+
+	err := fs.Parse(args)
+	return fs, err
 }
 
 /*
@@ -47,8 +49,24 @@ func commaOk() {
 }
 
 func main() {
-	flag.Parse()
-	switch strings.ToLower(f) {
+	f, e := initFlags(os.Args[1:])
+	if e != nil {
+		fmt.Println(e)
+		os.Exit(1)
+	}
+
+	if os.Args[1] != f.Name() {
+		e = errors.New("Expected run flag set")
+		fmt.Println()
+		fmt.Println(e)
+		fmt.Println()
+		os.Exit(1)
+	}
+
+	subCmd := f.Arg(2)
+	fmt.Println()
+	fmt.Println(subCmd)
+	switch strings.ToLower(subCmd) {
 	case "commaok", "comma_ok":
 		commaOk()
 	}
