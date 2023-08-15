@@ -49,7 +49,7 @@ func commaOk() {
 }
 
 func main() {
-	f, e := initFlags(os.Args[1:])
+	f, e := initFlags(os.Args[2:])
 	if e != nil {
 		fmt.Println(e)
 		os.Exit(1)
