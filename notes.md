@@ -238,3 +238,246 @@ ages := make(map[int][]string, 10)
 
 - The key for a map can be any comparable type. This means you cannot use a slice or a map as the key for a map.
 - > Use a map when the order of elements doesn’t matter. Use a slice when the order of elements is important.
+
+### Structs
+
+When you have related data that you want to group together, you should define a struct.
+
+> If you already know an object-oriented language, you might be wondering about the difference between classes and
+> structs. The difference is simple: Go doesn’t have classes, because it doesn’t have inheritance. This doesn’t mean
+> that Go doesn’t have some of the features of object-oriented languages, it just does things a little differently.
+
+The syntax for defining a `struct` is as follows:
+
+```go
+type person struct {
+ name string
+ age int
+ pet string
+}
+
+// Using the struct type
+julia := person{
+ "Julia",
+ 40,
+ "dog",
+}
+```
+
+## Chapter 7
+
+### Pointers
+
+Pointers are used to share data across different functions and methods. Pointers allow you to share data without having
+to copy it. The `zero` value for a pointer is `nil`.
+
+Go’s pointer syntax is partially borrowed from C and C++. Since Go has a garbage collector, most of the pain of memory
+management is removed. Furthermore, some of the tricks that you can do with pointers in C and C++, including pointer
+arithmetic, are not allowed in Go.
+
+The & is the address operator. It precedes a value type and returns the address of the memory location where the value
+is stored:
+
+```go
+x := "hello"
+pointerToX := &x
+```
+
+The \* is the indirection operator. It precedes a variable of pointer type and returns the pointed-to value. This is
+called dereferencing:
+
+```go
+x := 10
+pointerToX := &x
+fmt.Println(pointerToX) // prints a memory address (example 0xc00001a0e8)
+fmt.Println(*pointerToX) // prints 10
+
+z := 5 + *pointerToX
+fmt.Println(z) // prints 15
+```
+
+Before dereferencing a pointer, you must make sure that the pointer is non-nil. Your program will panic if you attempt
+to dereference a nil pointer:
+
+```go
+var x *int
+
+fmt.Println(x == nil) // prints true
+fmt.Println(*x) // panics
+```
+
+Not being able to take the address of a constant is sometimes inconvenient. If you have a struct with a field of a
+pointer to a primitive type, you can’t assign a literal directly to the field:
+
+```go
+type person struct {
+  FristName string
+  MiddleName *string
+  LastName string
+}
+
+p := person{
+  FristName: "John",
+  MiddleName: "Perry", // This line won't compile
+  LastName: "Doe",
+}
+```
+
+One way around this problem is to write a helper funtion that takes in a boolean, numeric, or string type and returns a
+pointer to that type.
+
+```go
+func stringp(s string) *string {
+  return &s
+}
+
+p := person{
+  FristName : "John",
+  MiddleName: stringp("Perry"),
+  LastName: "Doe",
+}
+```
+
+Why does this work? When we pass a constant to a function, the constant is copied to a parameter, which is a variable.
+Since it’s a variable, it has an address in memory. The function then returns the variable’s memory address.
+
+#### Pointers Indicate Mutable Parameters
+
+The lack of immutable declarations in Go might seem problematic, but the ability to choose between value and pointer
+parameter types addresses the issue. As the Software Construction course materials go on to explain: “[U]sing mutable
+objects is just fine if you are using them entirely locally within a method, and with only one reference to the object.”
+Rather than declare that some variables and parameters are immutable, Go developers use pointers to indicate that a
+parameter is mutable.
+
+If a pointer is passed to a function, the function gets a copy of the pointer. This still points to the original data,
+which means that the original data can be modified by the called function.
+
+There are a couple of related implications of this.
+
+##### 1st
+
+The first implication is that when you pass a nil pointer to a function, you cannot make the value non-nil. You can only
+reassign the value if there was a value already assigned to the pointer. While confusing at first, it makes sense. Since
+the memory location was passed to the function via call-by-value, we can’t change the memory address, any more than we
+could change the value of an int parameter. We can demonstrate this with the following program:
+
+```go
+func failedUpdate(g *int) {
+  x := 10
+  g = &x
+}
+
+func main() {
+  var f *int // f is nil
+
+  failedUpdate(f)
+  fmt.Println(f) // still nil
+}
+```
+
+We start with a nil variable f in main. When we call failedUpdate, we copy the value of f, which is nil, into the
+parameter named g. This means that g is also set to nil. We then declare a new variable x within failedUpdate with the
+value 10. Next, we change g in failedUpdate to point to x. This does not change the f in main, and when we exit
+failedUpdate and return to main, f is still nil.
+
+##### 2nd
+
+if you want the value assigned to a pointer parameter to still be there when you exit the function, you must dereference
+the pointer and set the value. If you change the pointer, you have changed the copy, not the original. Dereferencing
+puts the new value in the memory location pointed to by both the original and the copy. Here’s a short program that
+shows how this works:
+
+```go
+func failedUpdate(px *int) {
+    x2 := 20
+    px = &x2
+}
+
+func update(px *int) {
+    *px = 20
+}
+
+func main() {
+    x := 10
+    failedUpdate(&x)
+    fmt.Println(x) // prints 10
+    update(&x)
+    fmt.Println(x) // prints 20
+}
+```
+
+In this example, we start with x in main set to 10. When we call failedUpdate, we copy the address of x into the
+parameter px. Next, we declare x2 in failedUpdate, set to 20. We then point px in failedUpdate to the address of x2.
+When we return to main, the value of x is unchanged. When we call update, we copy the address of x into px again.
+However, this time we change the value of what px in update points to, the variable x in main. When we return to main, x
+has been changed.
+
+#### Pointers Are a Last Resort
+
+When returning values from a function, you should favor value types. Only use a pointer type as a return type if there
+is state within the data type that needs to be modified. When we look at I/O in “io and Friends”, we’ll see that with
+buffers for reading or writing data. In addition, there are data types that are used with concurrency that must always
+be passed as pointers.
+
+#### The Zero Value Versue No Value
+
+When not working with JSON (or other external protocols), resist the temptation to use a pointer field to indicate no
+value. While a pointer does provide a handy way to indicate no value, if you are not going to modify the value, you
+should use a value type instead, paired with a boolean.
+
+#### Difference Between Maps and Slices
+
+Avoid using maps for input parameters or return values, especially on public APIs. On an API-design level, maps are a
+bad choice because they say nothing about what values are contained within; there’s nothing that explicitly defines what
+keys are in the map, so the only way to know what they are is to trace through the code.
+
+Passing a slice to a function has more complicated behavior: any modification to the contents of the slice is reflected
+in the original variable, but using append to change the length isn’t reflected in the original variable, even if the
+slice has a capacity greater than its length. That’s because a slice is implemented as a struct with three fields: an
+int field for length, an int field for capacity, and a pointer to a block of memory.
+
+#### Slices as Buffers
+
+When reading data from an external resource (like a file or a network connection), many languages use code like this:
+
+```ts
+r = open_resource()
+while r.has_data() {
+  data-chunk = r.next_chunk()
+  process(data-chunk)
+}
+
+close(r)
+```
+
+The problem with this pattern is that every time we iterate through that while loop, we allocate another data_chunk even
+though each one is only used once. This creates lots of unnecessary memory allocations. Garbage-collected languages
+handle those allocations for you automatically, but the work still needs to be done to clean them up when you are done
+processing.
+
+In `Go`; Rather than returning a new allocation each time we read from a data source, we create a slice of bytes once
+and use it as a buffer to read data from the data source:
+
+```go
+file, err := os.Open(fileName)
+if err != nil {
+  return err
+}
+defer file.Close()
+
+data := make([]byte, 100)
+for {
+  count, err := file.Read(data)
+  if err != nil {
+    return err
+  }
+  if count == 0 {
+    return nil
+  }
+  process(data[:count])
+}
+```
+
+We can’t change the length or capacity of a slice when we pass it to a function, but we can change the contents up to
+the current length. In this code, we create a buffer of 100 bytes and each time through the loop, we copy the next block
+of bytes (up to 100) into the slice. We then pass the populated portion of the buffer to process.
