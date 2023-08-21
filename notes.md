@@ -481,3 +481,257 @@ for {
 We can’t change the length or capacity of a slice when we pass it to a function, but we can change the contents up to
 the current length. In this code, we create a buffer of 100 bytes and each time through the loop, we copy the next block
 of bytes (up to 100) into the slice. We then pass the populated portion of the buffer to process.
+
+## Chapter 7 - 2nd Edition - Generics
+
+### Generics Reduce Repetitive Code and Increase Type Safety
+
+There are, situations where it’s useful to write functions or structs where the specific type of a parameter or field is
+left unspecified until it is used.
+
+### Introduction to Generics
+
+Implementation of stack suing Generics
+
+```go
+type Stack[T comparable] struct {
+  vals []T
+}
+
+func (s *Stack[T]) Push(val T) {
+  s.vals = append(s.vals, val)
+}
+
+func (s *Stack[T]) Pop() (T, bool) {
+  if len(s.vals) == 0 {
+    var zer T
+    return zero, false
+  }
+
+  top := s.vals[len(s.vals)-1]
+  s.vals = s.vals[:len(s.vals)-1]
+
+  return top, true
+}
+
+// To compare Generics, the comparable constraint is required
+func (s Stack[T]) Contians(val T) bool {
+  for _, v := range s.vals {
+    if v == val {
+      return true
+    }
+  }
+
+  return false
+}
+
+func main() {
+  var intStack Stack[int]
+  intStack.Push(10)
+  intStack.Push(20)
+  intStack.Push(30)
+
+  v, ok := intStack.Pop()
+  fmt.Println(v, ok) // -> 30, true
+
+  fmt.Println(intStack.Contians(20)) // -> true
+  fmt.Println(intStack.Contians(40)) // -> false
+}
+```
+
+#### Generic Functions Abstract Algorithms
+
+```go
+// Map turns a []T1 to a []T2 using a mapping function.
+// this function has two type parameters, T1 and T2.
+//  This works with slices of any type.
+func Map[T1, T2 any](s []T1, f func(T1) T2) []T2 {
+  r := make([]T2, len(s))
+  for i, v := range s {
+    r[i] = f(v)
+  }
+  return r
+}
+
+// Reduce reduces a []T1 to a single value using a reduction function.
+func Reduce[T1, T2 any](s []T1, initializer T2, f func(T2, T1) T2) T2 {
+  r := initializer
+  for _, v := range s {
+    r = f(r, v)
+  }
+  return r
+}
+
+// Filter filters values from a slice using a filter function.
+// It returns a new slice with only the elements of s
+// for which f returned true.
+func Filter[T any](s []T, f func(T) bool) []T {
+  var r []T
+  for _, v := range s {
+    if f(v) {
+      r = append(r, v)
+    }
+  }
+  return r
+}
+```
+
+Functions place their type parameters after the function name and before the variable parameters. Map and Reduce have
+two type parameters, both of any type, while Filter has one.
+
+```go
+  func main() {
+  words := []string{"One", "Potato", "Two", "Potato"}
+  filtered := Filter(words, func(s string) bool {
+    return s != "Potato"
+  })
+  fmt.Println(filtered)
+
+  lengths := Map(filtered, func(s string) int {
+    return len(s)
+  })
+  fmt.Println(lengths)
+
+  sum := Reduce(lengths, 0, func(acc int, val int) int {
+    return acc + val
+  })
+  fmt.Println(sum)
+}
+
+// Output:
+// [One Two]
+// [3 3]
+// 6
+```
+
+#### Generics and Interfaces
+
+You can use any interface as a type constraint, not just any and comparable. For example, say you wanted to make a type
+that holds any two values of the same type, as long as the type implements fmt.Stringer. Generics make it possible to
+enforce this at compile-time.
+
+```go
+type Pair[T fmt.Stringer] struct {
+  Val1 T
+  Val2 T
+}
+```
+
+You can also create interfaces that have type parameters. For example, here’s an interface with a method that compares
+against a value of the specified type and returns a float64. It also embeds fmt.Stringer. We’ll use these two types to
+create a comparison function. The function takes in two Pair instances that have fields of type Differ, and returns the
+Pair with the closer values:
+
+```go
+type Differ[T any] interface {
+  fmt.Stringer
+  Diff(T)
+}
+
+func FindCloser[T Differ[T]](pair1, pair2 Pair[T]) Pair[T] {
+  d1 := pair1.Val1.Diff(pair1.Val2)
+  d2 := pair2.Val1.Diff(pair2.Val2)
+
+  if d1 < d2 {
+    return pair1
+  }
+  return pair2
+}
+
+type Point2D struct {
+  X, Y int
+}
+
+func (p2 Point2D) String() string {
+  return fmt.Sprintf("(%d, %d)", p2.X, p2.Y)
+}
+
+func (p2 Point2D) Diff(from Point2D) float64 {
+  x := p2.x - from.X
+  y := p2.y - from.Y
+
+  return math.Sqrt(float64(x*x) + float64(y*y))
+}
+
+type Point3D struct {
+  X, Y, Z int
+}
+
+func (p3 Point3D) String() string {
+  return fmt.Sprintf("(%d, %d, %d)", p3.X, p3.Y, p3.Z)
+}
+
+func (p3 Point3D) Diff(from Point3D) float64 {
+  x := p3.X - from.X
+  y := p3.Y - from.Y
+  z := p3.Z - from.Z
+
+  return math.Sqrt(float64(x*x) + float64(y*y) + float64(z*z))
+}
+
+func main() {
+  pair2Da := Pair[Point2D]{Point2D{1, 1}, Point2D{2, 2}}
+  pair2Db := Pair[Point2D]{Point2D{10, 10}, Point2D{15, 5}}
+  closer2D := FindCloser(pair2Da, pair2Db)
+  fmt.Println(closer2D)
+
+  pair3Da := Pair[Point3D]{Point3D{1, 1, 10}, Point3D{5, 5, 0}}
+  pair3Db := Pair[Point3D]{Point3D{10, 10, 10}, Point3D{11, 5, 0}}
+  closer2 := FindCloser(pair3Da, pair3Db)
+  fmt.Println(closer2)
+}
+```
+
+#### Use Type Terms to Specify Operators
+
+There's one more thing that needs to be represented with generics: operators. If you want to write a generic versio of
+Min, you need a way to specify that you can use comparison operators, like < and > Go generics do that with the type
+element, which is composed of one or more type terms within an interface.
+
+```go
+type BuiltInOrdered interface {
+  string | int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | uintptr | float32 | float64
+}
+
+func Min[T BuiltInOrdered](v1, v2 T) T {
+  if v1 < v2 {
+    return v1
+  }
+  return v2
+}
+
+func main() {
+  a := 10
+  b := 20
+  fmt.Println(Min(a, b))
+}
+```
+
+#### Type Inference and Generics
+
+Just as Go supports type inference when using the := operator, it also supports type inference to simplify calls to
+generic functions. You can see this in the calls to Map, Filter, and Reduce above. In some situations, type inference
+isn't possible (for example, when a type parameter is only used as a return value). When that happens, all type
+arguments must be specified. Here's a slightly silly bi tof code that demonstratrs a situation where type inference
+doesn't work:
+
+```go
+type Integer interface {
+  int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64
+}
+
+func Convert[T1, T2 Integer](int T1) T2 {
+  return T2(in)
+}
+
+func main() {
+  var a int = 10
+  b := Convert[int, int64](a) // can't infer the return type
+  fmt.Println(b)
+}
+```
+
+#### Type Elements Limit Constants
+
+Type elements also specify which constants can be assigned to variables of the generic type. Like operators, the
+constants need to be valild for all the type terms in type element.
